@@ -1,0 +1,14 @@
+{
+    "type":"record",
+    "namespace":"com.semifir",
+    "name":"User",
+    "doc":"Description du model",
+    "fields" : [
+        {"name":"nom", "type": "string", "doc":"nom du user"},
+        {"name":"prenom", "type": "string"},
+        {"name":"age", "type": "int"},
+        {"name":"taille", "type": "float"},
+        {"name":"poids", "type": "float"},
+        {"name":"valid", "type": "boolean","default":false}
+    ]
+}

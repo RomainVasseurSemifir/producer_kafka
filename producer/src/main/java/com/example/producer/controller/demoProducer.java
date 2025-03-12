@@ -1,6 +1,8 @@
 package com.example.producer.controller;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -20,6 +22,8 @@ public class demoProducer {
 
     @Value(value = "${spring.kafka.bootstrap-servers}")
     private String bootstrapAddress;
+
+    private Logger logger = LoggerFactory.getLogger(demoProducer.class);
 
     @Autowired
     KafkaTemplate<String, String> kafkaTemplate;
@@ -66,11 +70,13 @@ public class demoProducer {
             if (ex == null){
                 // traiter mon resultat
                 // handleResult(result);
-                result.getRecordMetadata().partition();
-                result.getRecordMetadata().offset();
+                logger.info("send message : "+ message
+                        + " in partition : "+ result.getRecordMetadata().partition()
+                        + " and with offset : "+result.getRecordMetadata().offset());
             // if faillure
             } else {
                 // handleFaillure(message, ex);
+                logger.info(("Erreur : "+ ex.getMessage()));
             }
 
         });

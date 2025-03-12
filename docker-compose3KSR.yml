@@ -1,0 +1,119 @@
+# Lister les servers (conteneurs)
+services:
+  broker1:
+    container_name: broker1
+    image: confluentinc/cp-kafka:7.6.1
+    ports: # port local : port conteneur
+      - "9091:9092"
+    environment:
+      # identités
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk # UUID base 64
+      KAFKA_NODE_ID: 1
+      KAFKA_BROKER_ID: 1
+      # Cannaux communications => listeners
+      KAFKA_LISTENERS: 'CLIENT_EXT://0.0.0.0:9092,CLIENT_INT://broker1:29092,CONTROLLER://broker1:29093'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CLIENT_EXT:PLAINTEXT,CLIENT_INT:PLAINTEXT,CONTROLLER:PLAINTEXT'
+      # adresse public => transmise
+      KAFKA_ADVERTISED_LISTENERS: 'CLIENT_EXT://localhost:9091,CLIENT_INT://broker1:29092'
+      # Parrametres globaux
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_IRS: 2
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      # configurations de mon cluster manager
+      # KAFKA_ZOOKEEPER_CONNECT: adresse ip:port des machines zookeeper
+      # mode kraft
+      KAFKA_PROCESS_ROLES: broker, controller
+      KAFKA_INTER_BROKER_LISTENER_NAME: CLIENT_INT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@broker1:29093,2@broker2:29093,3@broker3:29093'
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+
+  broker2:
+    container_name: broker2
+    image: confluentinc/cp-kafka:7.6.1
+    ports: # port local : port conteneur
+      - "9092:9092"
+    environment:
+      # identités
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk # UUID base 64
+      KAFKA_NODE_ID: 2
+      KAFKA_BROKER_ID: 2
+      # Cannaux communications => listeners
+      KAFKA_LISTENERS: 'CLIENT_EXT://0.0.0.0:9092,CLIENT_INT://broker2:29092,CONTROLLER://broker2:29093'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CLIENT_EXT:PLAINTEXT,CLIENT_INT:PLAINTEXT,CONTROLLER:PLAINTEXT'
+      # adresse public => transmise
+      KAFKA_ADVERTISED_LISTENERS: 'CLIENT_EXT://localhost:9092,CLIENT_INT://broker2:29092'
+      # Parrametres globaux
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_IRS: 2
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      # configurations de mon cluster manager
+      # KAFKA_ZOOKEEPER_CONNECT: adresse ip:port des machines zookeeper
+      # mode kraft
+      KAFKA_PROCESS_ROLES: broker, controller
+      KAFKA_INTER_BROKER_LISTENER_NAME: CLIENT_INT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@broker1:29093,2@broker2:29093,3@broker3:29093'
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+
+  broker3:
+    container_name: broker3
+    image: confluentinc/cp-kafka:7.6.1
+    ports: # port local : port conteneur
+      - "9093:9092"
+    environment:
+      # identités
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk # UUID base 64
+      KAFKA_NODE_ID: 3
+      KAFKA_BROKER_ID: 3
+      # Cannaux communications => listeners
+      KAFKA_LISTENERS: 'CLIENT_EXT://0.0.0.0:9092,CLIENT_INT://broker3:29092,CONTROLLER://broker3:29093'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CLIENT_EXT:PLAINTEXT,CLIENT_INT:PLAINTEXT,CONTROLLER:PLAINTEXT'
+      # adresse public => transmise
+      KAFKA_ADVERTISED_LISTENERS: 'CLIENT_EXT://localhost:9093,CLIENT_INT://broker3:29092'
+      # Parrametres globaux
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_IRS: 2
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      # configurations de mon cluster manager
+      # KAFKA_ZOOKEEPER_CONNECT: adresse ip:port des machines zookeeper
+      # mode kraft
+      KAFKA_PROCESS_ROLES: broker, controller
+      KAFKA_INTER_BROKER_LISTENER_NAME: CLIENT_INT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@broker1:29093,2@broker2:29093,3@broker3:29093'
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+
+  schema-registry:
+    container_name: schema-registry
+    image: confluentinc/cp-schema-registry:7.6.1
+    ports:
+      - '8081:8081'
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_LISTENERS: 'http://0.0.0.0:8081'
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker1:29092,broker2:29092,broker3:29092'
+    volumes: # lier dossier local - dossier dans le conteneur
+      - "./registry/:/etc/tutorial/"
+    depends_on:
+      - broker1
+      - broker2
+      - broker3
+
+  kafka-ui:
+    container_name: kafka_ui
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - '8080:8080'
+    environment:
+      # par cluster les info sous fournis sous la forme "_id-cluster_variable=..."
+      KAFKA_CLUSTERS_0_NAME: docker-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'broker1:29092,broker2:29092,broker3:29092'
+      DYNAMIC_CONFIG_ENABLED: 'true'
+    depends_on:
+      - broker1
+      - broker2
+      - broker3
